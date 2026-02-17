@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PokéCard Creator ⚡</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #FFD700;
+      --gold-dark: #C9A227;
+      --gold-light: #FFF0A0;
+      --bg: #0a0a1a;
+      --card-bg: #1a1a2e;
+      --pink: #ff6eb4;
+      --blue: #4FC3F7;
+      --electric: #FFEB3B;
+      --shadow-gold: 0 0 20px rgba(255,215,0,0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: white;
+    }
+
+    /* ====== ANIMATED BACKGROUND ====== */
+    .bg-stars {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(255, 110, 180, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(79, 195, 247, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 60% 80%, rgba(255, 215, 0, 0.06) 0%, transparent 50%);
+    }
+    .bg-stars::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 25%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 85%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 25% 55%, rgba(255,215,0,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 75% 35%, rgba(79,195,247,0.4) 0%, transparent 100%);
+      animation: twinkle 4s ease-in-out infinite alternate;
+    }
+    @keyframes twinkle { from { opacity: 0.6; } to { opacity: 1; } }
+
+    /* ====== HEADER ====== */
+    header {
+      position: relative; z-index: 10;
+      text-align: center;
+      padding: 40px 20px 20px;
+    }
+    .logo {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      letter-spacing: 4px;
+      background: linear-gradient(135deg, var(--gold) 0%, #FF6B35 40%, var(--pink) 80%, var(--blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 30px rgba(255,215,0,0.4));
+      line-height: 1;
+    }
+    .logo span { display: inline-block; animation: logoBounce 2s ease-in-out infinite; }
+    .logo span:nth-child(2) { animation-delay: 0.1s; }
+    .logo span:nth-child(3) { animation-delay: 0.2s; }
+    .logo span:nth-child(4) { animation-delay: 0.3s; }
+    .logo span:nth-child(5) { animation-delay: 0.4s; }
+    .logo span:nth-child(6) { animation-delay: 0.5s; }
+    .logo span:nth-child(7) { animation-delay: 0.6s; }
+    .logo span:nth-child(8) { animation-delay: 0.7s; }
+    .logo span:nth-child(9) { animation-delay: 0.8s; }
+    .logo span:nth-child(10) { animation-delay: 0.9s; }
+    @keyframes logoBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .tagline {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(0.4rem, 1.5vw, 0.65rem);
+      color: rgba(255,255,255,0.5);
+      margin-top: 10px;
+      letter-spacing: 2px;
+    }
+
+    /* ====== MAIN CONTAINER ====== */
+    .container {
+      position: relative; z-index: 5;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* ====== STEPS ====== */
+    .steps {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+      margin: 30px auto 40px;
+      max-width: 600px;
+      flex-wrap: nowrap;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 60%;
+      width: 80%;
+      height: 2px;
+      background: rgba(255,215,0,0.2);
+    }
+    .step.active:not(:last-child)::after,
+    .step.done:not(:last-child)::after { background: rgba(255,215,0,0.6); }
+    .step-num {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,215,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bangers', cursive;
+      font-size: 1.1rem;
+      color: rgba(255,215,0,0.4);
+      transition: all 0.3s;
+      background: rgba(255,215,0,0.05);
+    }
+    .step.active .step-num {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(255,215,0,0.15);
+      box-shadow: 0 0 15px rgba(255,215,0,0.4);
+    }
+    .step.done .step-num {
+      border-color: var(--gold);
+      background: var(--gold);
+      color: #000;
+    }
+    .step-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    .step.active .step-label { color: rgba(255,215,0,0.8); }
+    .step.done .step-label { color: rgba(255,215,0,0.5); }
+
+    /* ====== PANELS ====== */
+    .panel {
+      display: none;
+      animation: panelIn 0.4s ease;
+    }
+    .panel.active { display: block; }
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ====== GLASS CARD ====== */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,215,0,0.15);
+      border-radius: 24px;
+      padding: 40px;
+      backdrop-filter: blur(10px);
+    }
+
+    /* ====== PANEL TITLES ====== */
+    .panel-title {
+      font-family: 'Bangers', cursive;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      letter-spacing: 2px;
+      text-align: center;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, var(--gold), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .panel-subtitle {
+      text-align: center;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.9rem;
+      margin-bottom: 30px;
+    }
+
+    /* ====== DESIGN SELECTION ====== */
+    .designs-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .design-option {
+      cursor: pointer;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 3px solid rgba(255,255,255,0.1);
+      transition: all 0.3s;
+      width: 200px;
+      position: relative;
+    }
+    .design-option:hover {
+      border-color: rgba(255,215,0,0.5);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(255,215,0,0.2);
+    }
+    .design-option.selected {
+      border-color: var(--gold);
+      box-shadow: 0 0 25px rgba(255,215,0,0.4);
+      transform: translateY(-4px) scale(1.02);
+    }
+    .design-option .card-preview {
+      width: 100%;
+      aspect-ratio: 2/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .design-option .design-label {
+      padding: 10px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-align: center;
+      background: rgba(0,0,0,0.5);
+    }
+    .design-option .selected-badge {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--gold);
+      color: #000;
+      font-weight: 900;
+      font-size: 0.65rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      display: none;
+    }
+    .design-option.selected .selected-badge { display: block; }
+
+    /* Design 1: Classic */
+    .design-1-preview {
+      background: linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FF4500 100%);
+    }
+    /* Design 2: Holographic */
+    .design-2-preview {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 40%, #f64f59 70%, #c471ed 100%);
+      animation: holoBg 3s ease-in-out infinite alternate;
+    }
+    @keyframes holoBg {
+      from { background-position: 0% 50%; filter: hue-rotate(0deg); }
+      to { background-position: 100% 50%; filter: hue-rotate(30deg); }
+    }
+    /* Design 3: Shadow */
+    .design-3-preview {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      border: 2px solid rgba(138, 43, 226, 0.5);
+    }
+
+    /* ====== FORM ====== */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,215,0,0.8);
+    }
+    input, select, textarea {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,215,0,0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: white;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--gold);
+      background: rgba(255,215,0,0.06);
+      box-shadow: 0 0 15px rgba(255,215,0,0.15);
+    }
+    select option { background: #1a1a2e; }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* ====== UPLOAD ZONE ====== */
+    .upload-zone {
+      border: 2px dashed rgba(255,215,0,0.3);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: rgba(255,215,0,0.02);
+      position: relative;
+    }
+    .upload-zone:hover {
+      border-color: var(--gold);
+      background: rgba(255,215,0,0.05);
+    }
+    .upload-zone.drag-over {
+      border-color: var(--gold);
+      background: rgba(255,215,0,0.08);
+      transform: scale(1.01);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; border: none; background: none;
+    }
+    .upload-icon { font-size: 3rem; margin-bottom: 12px; }
+    .upload-text { font-weight: 700; font-size: 1rem; color: rgba(255,255,255,0.7); }
+    .upload-hint { font-size: 0.8rem; color: rgba(255,255,255,0.35); margin-top: 6px; }
+    .upload-preview {
+      width: 120px; height: 120px;
+      border-radius: 12px;
+      object-fit: cover;
+      margin: 0 auto 10px;
+      display: block;
+      border: 2px solid var(--gold);
+      box-shadow: 0 0 20px rgba(255,215,0,0.3);
+    }
+
+    /* ====== HP SLIDER ====== */
+    .hp-row { display: flex; align-items: center; gap: 12px; }
+    .hp-display {
+      font-family: 'Bangers', cursive;
+      font-size: 2rem;
+      color: var(--gold);
+      min-width: 60px;
+      text-align: center;
+    }
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      background: rgba(255,215,0,0.2);
+      border-radius: 3px;
+      border: none;
+      padding: 0;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--gold);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255,215,0,0.5);
+    }
+
+    /* ====== BUTTONS ====== */
+    .btn {
+      font-family: 'Bangers', cursive;
+      font-size: 1.3rem;
+      letter-spacing: 2px;
+      padding: 14px 36px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), #FF8C00);
+      color: #000;
+      box-shadow: 0 4px 20px rgba(255,215,0,0.4);
+    }
+    .btn-primary:hover { box-shadow: 0 8px 30px rgba(255,215,0,0.6); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-download {
+      background: linear-gradient(135deg, #4CAF50, #2E7D32);
+      color: white;
+      box-shadow: 0 4px 20px rgba(76,175,80,0.4);
+    }
+    .btn-download:hover { box-shadow: 0 8px 30px rgba(76,175,80,0.6); }
+    .btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    /* ====== POKEMON CARD ====== */
+    .card-display {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0 30px;
+    }
+
+    .poke-card {
+      width: 320px;
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 2px rgba(255,255,255,0.1);
+      flex-shrink: 0;
+      transform-style: preserve-3d;
+      transition: transform 0.1s ease;
+    }
+    .poke-card:hover { transform: perspective(800px) rotateY(3deg) rotateX(-2deg); }
+
+    /* ====== CLASSIC CARD DESIGN ====== */
+    .card-classic {
+      background: linear-gradient(160deg, #FFE066 0%, #FFD700 30%, #FFAA00 70%, #FF8C00 100%);
+      font-family: 'Nunito', sans-serif;
+    }
+    .card-classic .card-inner {
+      margin: 8px;
+      background: linear-gradient(160deg, #FFF5CC 0%, #FFE57A 100%);
+      border-radius: 14px;
+      padding: 12px;
+      height: calc(100% - 16px);
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .card-classic .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .card-classic .pokemon-name {
+      font-family: 'Bangers', cursive;
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      color: #1a1a1a;
+      line-height: 1;
+    }
+    .card-classic .pokemon-stage {
+      font-size: 0.55rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #555;
+      display: block;
+      letter-spacing: 1px;
+    }
+    .card-classic .hp-badge {
+      font-family: 'Bangers', cursive;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      color: #CC0000;
+    }
+    .card-classic .hp-badge span { font-size: 0.65rem; color: #888; }
+
+    .card-classic .card-image-frame {
+      background: linear-gradient(135deg, #87CEEB 0%, #B8D4FF 40%, #C8F0FF 100%);
+      border-radius: 10px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 3px solid rgba(0,0,0,0.15);
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .card-classic .card-image-frame img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .card-classic .card-image-frame .placeholder-art {
+      font-size: 5rem;
+      opacity: 0.4;
+    }
+
+    .card-classic .type-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .type-badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .card-classic .pokedex-num { font-size: 0.6rem; color: #777; font-weight: 700; }
+
+    .card-classic .divider { height: 1px; background: rgba(0,0,0,0.1); margin: 8px 0; }
+
+    .card-classic .moves { display: flex; flex-direction: column; gap: 8px; }
+    .card-classic .move {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .card-classic .move-cost {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+    .energy-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.4rem;
+    }
+    .card-classic .move-info { flex: 1; }
+    .card-classic .move-name {
+      font-weight: 900;
+      font-size: 0.8rem;
+      color: #1a1a1a;
+    }
+    .card-classic .move-desc {
+      font-size: 0.6rem;
+      color: #555;
+      margin-top: 1px;
+      line-height: 1.3;
+    }
+    .card-classic .move-damage {
+      font-family: 'Bangers', cursive;
+      font-size: 1.3rem;
+      color: #1a1a1a;
+      flex-shrink: 0;
+    }
+
+    .card-classic .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+    }
+    .card-classic .weakness-row { display: flex; gap: 10px; }
+    .card-classic .stat { font-size: 0.55rem; color: #666; font-weight: 700; }
+    .card-classic .stat span { font-weight: 900; color: #333; }
+    .card-classic .illustrator { font-size: 0.5rem; color: #888; font-style: italic; }
+    .card-classic .rarity {
+      font-size: 0.8rem;
+    }
+
+    /* ====== HOLO CARD ====== */
+    .card-holo {
+      background: linear-gradient(160deg, #1a0533 0%, #250d45 40%, #0d1b40 100%);
+    }
+    .card-holo .holo-sheen {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg,
+        rgba(255,0,255,0.08) 0%,
+        rgba(0,255,255,0.08) 25%,
+        rgba(255,255,0,0.08) 50%,
+        rgba(0,255,0,0.08) 75%,
+        rgba(255,0,0,0.08) 100%
+      );
+      animation: holoSheen 4s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    @keyframes holoSheen {
+      0% { opacity: 0.5; transform: rotate(0deg) scale(1); }
+      100% { opacity: 1; transform: rotate(5deg) scale(1.02); }
+    }
+    .card-holo .card-inner {
+      position: relative; z-index: 1;
+      margin: 8px;
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(2px);
+    }
+    .card-holo .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .card-holo .pokemon-name {
+      font-family: 'Bangers', cursive;
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #C084FC, #818CF8, #67E8F9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card-holo .pokemon-stage {
+      font-size: 0.55rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      display: block;
+      letter-spacing: 1px;
+    }
+    .card-holo .hp-badge {
+      font-family: 'Bangers', cursive;
+      font-size: 1.2rem;
+      background: linear-gradient(90deg, #F472B6, #FB923C);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card-holo .hp-badge small { font-size: 0.65rem; color: rgba(255,255,255,0.4); -webkit-text-fill-color: rgba(255,255,255,0.4); }
+    .card-holo .card-image-frame {
+      background: linear-gradient(135deg, #0d0d1a 0%, #1a0533 100%);
+      border-radius: 10px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 2px solid rgba(129,140,248,0.4);
+      margin-bottom: 10px;
+      position: relative;
+      box-shadow: inset 0 0 30px rgba(129,140,248,0.1), 0 0 20px rgba(129,140,248,0.2);
+    }
+    .card-holo .card-image-frame::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg,
+        transparent 40%,
+        rgba(129,140,248,0.05) 50%,
+        transparent 60%
+      );
+      animation: holoScan 3s ease-in-out infinite;
+    }
+    @keyframes holoScan {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .card-holo .card-image-frame img { width: 100%; height: 100%; object-fit: cover; }
+    .card-holo .card-image-frame .placeholder-art { font-size: 5rem; opacity: 0.3; }
+    .card-holo .type-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .card-holo .pokedex-num { font-size: 0.6rem; color: rgba(255,255,255,0.4); font-weight: 700; }
+    .card-holo .divider { height: 1px; background: rgba(255,255,255,0.1); margin: 8px 0; }
+    .card-holo .moves { display: flex; flex-direction: column; gap: 8px; }
+    .card-holo .move { display: flex; gap: 8px; align-items: flex-start; }
+    .card-holo .move-cost { display: flex; gap: 2px; flex-shrink: 0; padding-top: 2px; }
+    .card-holo .move-info { flex: 1; }
+    .card-holo .move-name { font-weight: 900; font-size: 0.8rem; color: rgba(255,255,255,0.9); }
+    .card-holo .move-desc { font-size: 0.6rem; color: rgba(255,255,255,0.45); margin-top: 1px; line-height: 1.3; }
+    .card-holo .move-damage {
+      font-family: 'Bangers', cursive;
+      font-size: 1.3rem;
+      background: linear-gradient(90deg, #C084FC, #67E8F9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      flex-shrink: 0;
+    }
+    .card-holo .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .card-holo .weakness-row { display: flex; gap: 10px; }
+    .card-holo .stat { font-size: 0.55rem; color: rgba(255,255,255,0.4); font-weight: 700; }
+    .card-holo .stat span { font-weight: 900; color: rgba(255,255,255,0.75); }
+    .card-holo .illustrator { font-size: 0.5rem; color: rgba(255,255,255,0.3); font-style: italic; }
+    .card-holo .rarity { font-size: 0.9rem; }
+
+    /* ====== SHADOW CARD ====== */
+    .card-shadow {
+      background: linear-gradient(160deg, #0a0a14 0%, #121224 50%, #0a0a14 100%);
+    }
+    .card-shadow .shadow-border {
+      position: absolute; inset: 4px;
+      border-radius: 17px;
+      border: 1px solid rgba(138,43,226,0.5);
+      box-shadow: inset 0 0 20px rgba(138,43,226,0.1), 0 0 30px rgba(138,43,226,0.2);
+      pointer-events: none;
+    }
+    .card-shadow .card-inner {
+      position: relative; z-index: 1;
+      margin: 10px;
+      padding: 12px;
+    }
+    .card-shadow .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .card-shadow .pokemon-name {
+      font-family: 'Bangers', cursive;
+      font-size: 1.4rem;
+      letter-spacing: 3px;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(138,43,226,0.8), 0 0 40px rgba(138,43,226,0.4);
+    }
+    .card-shadow .pokemon-stage { font-size: 0.55rem; font-weight: 800; text-transform: uppercase; color: rgba(138,43,226,0.7); display: block; letter-spacing: 2px; }
+    .card-shadow .hp-badge { font-family: 'Bangers', cursive; font-size: 1.2rem; color: #8B5CF6; text-shadow: 0 0 10px rgba(139,92,246,0.6); }
+    .card-shadow .hp-badge small { font-size: 0.65rem; color: rgba(255,255,255,0.3); }
+    .card-shadow .card-image-frame {
+      background: #050510;
+      border-radius: 10px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid rgba(138,43,226,0.4);
+      margin-bottom: 10px;
+      position: relative;
+      box-shadow: inset 0 0 40px rgba(138,43,226,0.15);
+    }
+    .card-shadow .card-image-frame img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.9) contrast(1.1); }
+    .card-shadow .card-image-frame .placeholder-art { font-size: 5rem; opacity: 0.2; filter: grayscale(1); }
+    .card-shadow .type-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .card-shadow .pokedex-num { font-size: 0.6rem; color: rgba(138,43,226,0.5); font-weight: 700; font-family: 'Press Start 2P', monospace; font-size: 0.4rem; }
+    .card-shadow .divider { height: 1px; background: rgba(138,43,226,0.2); margin: 8px 0; }
+    .card-shadow .moves { display: flex; flex-direction: column; gap: 8px; }
+    .card-shadow .move { display: flex; gap: 8px; align-items: flex-start; }
+    .card-shadow .move-cost { display: flex; gap: 2px; flex-shrink: 0; padding-top: 2px; }
+    .card-shadow .move-info { flex: 1; }
+    .card-shadow .move-name { font-weight: 900; font-size: 0.8rem; color: rgba(255,255,255,0.85); }
+    .card-shadow .move-desc { font-size: 0.6rem; color: rgba(255,255,255,0.35); margin-top: 1px; line-height: 1.3; }
+    .card-shadow .move-damage { font-family: 'Bangers', cursive; font-size: 1.3rem; color: #A78BFA; text-shadow: 0 0 10px rgba(139,92,246,0.5); flex-shrink: 0; }
+    .card-shadow .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(138,43,226,0.2); }
+    .card-shadow .weakness-row { display: flex; gap: 10px; }
+    .card-shadow .stat { font-size: 0.55rem; color: rgba(255,255,255,0.3); font-weight: 700; }
+    .card-shadow .stat span { font-weight: 900; color: rgba(255,255,255,0.65); }
+    .card-shadow .illustrator { font-size: 0.5rem; color: rgba(138,43,226,0.4); font-style: italic; }
+    .card-shadow .rarity { font-size: 0.9rem; filter: drop-shadow(0 0 6px rgba(138,43,226,0.8)); }
+
+    /* ====== TYPE COLORS ====== */
+    .type-fire { background: #FF7043; color: white; }
+    .type-water { background: #29B6F6; color: white; }
+    .type-grass { background: #66BB6A; color: white; }
+    .type-electric { background: #FFCA28; color: #333; }
+    .type-psychic { background: #EC407A; color: white; }
+    .type-dark { background: #5D4037; color: white; }
+    .type-dragon { background: #5E35B1; color: white; }
+    .type-fairy { background: #F48FB1; color: white; }
+    .type-fighting { background: #EF6C00; color: white; }
+    .type-ghost { background: #7B1FA2; color: white; }
+    .type-ice { background: #80DEEA; color: #333; }
+    .type-normal { background: #BDBDBD; color: #333; }
+    .type-poison { background: #AB47BC; color: white; }
+    .type-rock { background: #8D6E63; color: white; }
+    .type-steel { background: #78909C; color: white; }
+
+    .energy-fire { background: #FF7043; }
+    .energy-water { background: #29B6F6; }
+    .energy-grass { background: #66BB6A; }
+    .energy-electric { background: #FFCA28; }
+    .energy-psychic { background: #EC407A; }
+    .energy-dark { background: #5D4037; }
+    .energy-dragon { background: #5E35B1; }
+    .energy-fairy { background: #F48FB1; }
+    .energy-colorless { background: #BDBDBD; }
+
+    /* ====== STATS PREVIEW (REVIEW STEP) ====== */
+    .review-layout {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .review-details { flex: 1; min-width: 260px; }
+    .review-stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      font-size: 0.9rem;
+    }
+    .review-stat-row:last-child { border-bottom: none; }
+    .review-stat-label { color: rgba(255,255,255,0.4); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+    .review-stat-value { font-weight: 800; color: white; }
+
+    /* ====== CROP MODAL ====== */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.85);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(6px);
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-overlay.hidden { display: none; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .crop-modal {
+      background: #111128;
+      border: 1px solid rgba(255,215,0,0.25);
+      border-radius: 24px;
+      padding: 28px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,215,0,0.1);
+    }
+    .crop-title {
+      font-family: 'Bangers', cursive;
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+    .crop-subtitle { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
+
+    .crop-viewport {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      background: #000;
+      cursor: crosshair;
+      border: 2px solid rgba(255,215,0,0.2);
+      touch-action: none;
+      user-select: none;
+    }
+    .crop-viewport canvas { position: absolute; top: 0; left: 0; }
+
+    /* crop overlay grid lines */
+    .crop-overlay {
+      position: absolute; inset: 0; pointer-events: none;
+      border: 2px solid rgba(255,215,0,0.6);
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
+    }
+    .crop-overlay::before, .crop-overlay::after {
+      content: '';
+      position: absolute;
+    }
+    .crop-overlay::before {
+      top: 33.33%; left: 0; right: 0;
+      height: 1px; background: rgba(255,215,0,0.25);
+      box-shadow: 0 calc(100%/3) 0 rgba(255,215,0,0.25);
+    }
+    .crop-overlay::after {
+      left: 33.33%; top: 0; bottom: 0;
+      width: 1px; background: rgba(255,215,0,0.25);
+      box-shadow: calc(100%/3) 0 0 rgba(255,215,0,0.25);
+    }
+
+    .crop-controls { margin-top: 20px; display: flex; flex-direction: column; gap: 14px; }
+    .crop-control-row { display: flex; align-items: center; gap: 12px; }
+    .crop-control-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,215,0,0.7);
+      min-width: 70px;
+    }
+    .crop-control-row input[type="range"] { flex: 1; }
+    .crop-control-val {
+      font-family: 'Bangers', cursive;
+      font-size: 1.1rem;
+      color: var(--gold);
+      min-width: 44px;
+      text-align: right;
+    }
+
+    .crop-btn-row { display: flex; gap: 12px; margin-top: 20px; }
+    .crop-btn-row .btn { flex: 1; justify-content: center; font-size: 1.1rem; padding: 12px 20px; }
+
+    .btn-reset {
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    /* ====== START OVER BUTTON ====== */
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.6);
+      box-shadow: 0 4px 20px rgba(239,68,68,0.2);
+    }
+
+    /* ====== NOTIFICATION ====== */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--gold);
+      color: #000;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ====== RESPONSIVE ====== */
+    @media (max-width: 480px) {
+      .glass { padding: 20px; }
+      .poke-card { width: 280px; }
+      .steps { gap: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-stars"></div>
+
+<header>
+  <div class="logo">
+    <span>P</span><span>o</span><span>k</span><span>é</span><span>C</span><span>a</span><span>r</span><span>d</span><span> ✨</span>
+  </div>
+  <p class="tagline">CREATE YOUR LEGENDARY CARD</p>
+</header>
+
+<div class="container">
+
+  <!-- STEPS -->
+  <div class="steps">
+    <div class="step active" id="step1">
+      <div class="step-num">1</div>
+      <div class="step-label">Design</div>
+    </div>
+    <div class="step" id="step2">
+      <div class="step-num">2</div>
+      <div class="step-label">Details</div>
+    </div>
+    <div class="step" id="step3">
+      <div class="step-num">3</div>
+      <div class="step-label">Review</div>
+    </div>
+  </div>
+
+  <!-- PANEL 1: DESIGN SELECTION -->
+  <div class="panel active" id="panel1">
+    <div class="glass">
+      <h2 class="panel-title">Choose Your Card Style</h2>
+      <p class="panel-subtitle">Pick the aesthetic that speaks to your inner trainer ✨</p>
+
+      <div class="designs-grid">
+        <div class="design-option selected" data-design="classic" onclick="selectDesign(this)">
+          <div class="card-preview design-1-preview">
+            <span style="font-size:3.5rem;">⚡</span>
+          </div>
+          <div class="design-label">Classic Gold</div>
+          <div class="selected-badge">✓ Selected</div>
+        </div>
+
+        <div class="design-option" data-design="holo" onclick="selectDesign(this)">
+          <div class="card-preview design-2-preview">
+            <span style="font-size:3.5rem;">💎</span>
+          </div>
+          <div class="design-label">Holographic</div>
+          <div class="selected-badge">✓ Selected</div>
+        </div>
+
+        <div class="design-option" data-design="shadow" onclick="selectDesign(this)">
+          <div class="card-preview design-3-preview">
+            <span style="font-size:3.5rem;">🌑</span>
+          </div>
+          <div class="design-label">Shadow Dark</div>
+          <div class="selected-badge">✓ Selected</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goToStep(2)">
+          Continue <span>→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2: DETAILS -->
+  <div class="panel" id="panel2">
+    <div class="glass">
+      <h2 class="panel-title">Card Details</h2>
+      <p class="panel-subtitle">Fill in your Pokémon's legendary information 📋</p>
+
+      <!-- PHOTO UPLOAD -->
+      <div class="form-group" style="margin-bottom:24px;">
+        <label>📸 Your Photo</label>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" accept="image/*" onchange="handleImageUpload(event)" id="fileInput" />
+          <div id="uploadPlaceholder">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">Drop your photo here or click to browse</div>
+            <div class="upload-hint">PNG, JPG, GIF up to 10MB</div>
+          </div>
+          <img id="uploadedPreview" class="upload-preview" style="display:none;" />
+          <div id="uploadedName" style="display:none; font-size:0.8rem; color:rgba(255,215,0,0.7); font-weight:700;"></div>
+          <button id="cropTriggerBtn" type="button" onclick="openCropModal(event)" style="display:none; margin-top:10px; font-family:'Bangers',cursive; font-size:1rem; letter-spacing:1px; padding:8px 22px; border-radius:50px; background:rgba(255,215,0,0.15); color:var(--gold); border:1px solid rgba(255,215,0,0.4); cursor:pointer; transition:all 0.2s; position:relative; z-index:2;">✂️ Adjust / Crop</button>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>⚡ Pokémon Name</label>
+          <input type="text" id="pokeName" placeholder="e.g. Thunderchu" maxlength="20" />
+        </div>
+
+        <div class="form-group">
+          <label>🎯 Type</label>
+          <select id="pokeType">
+            <option value="electric">⚡ Electric</option>
+            <option value="fire">🔥 Fire</option>
+            <option value="water">💧 Water</option>
+            <option value="grass">🌿 Grass</option>
+            <option value="psychic">🔮 Psychic</option>
+            <option value="dark">🌑 Dark</option>
+            <option value="dragon">🐉 Dragon</option>
+            <option value="fairy">✨ Fairy</option>
+            <option value="fighting">👊 Fighting</option>
+            <option value="ghost">👻 Ghost</option>
+            <option value="ice">❄️ Ice</option>
+            <option value="normal">⭐ Normal</option>
+            <option value="poison">☠️ Poison</option>
+            <option value="rock">🪨 Rock</option>
+            <option value="steel">⚙️ Steel</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label>❤️ HP — <span id="hpValue">120</span></label>
+          <div class="hp-row">
+            <input type="range" id="pokeHP" min="30" max="340" step="10" value="120" oninput="document.getElementById('hpValue').textContent=this.value" />
+            <div class="hp-display" id="hpDisplay">120</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>⚔️ Move 1 Name</label>
+          <input type="text" id="move1Name" placeholder="e.g. Thunder Shock" maxlength="20" />
+        </div>
+
+        <div class="form-group">
+          <label>💥 Move 1 Damage</label>
+          <input type="number" id="move1Dmg" placeholder="e.g. 30" min="0" max="999" value="30" />
+        </div>
+
+        <div class="form-group full">
+          <label>📖 Move 1 Description</label>
+          <input type="text" id="move1Desc" placeholder="e.g. A jolt of electricity stuns the opponent." maxlength="60" />
+        </div>
+
+        <div class="form-group">
+          <label>⚔️ Move 2 Name</label>
+          <input type="text" id="move2Name" placeholder="e.g. Volt Tackle" maxlength="20" />
+        </div>
+
+        <div class="form-group">
+          <label>💥 Move 2 Damage</label>
+          <input type="number" id="move2Dmg" placeholder="e.g. 90" min="0" max="999" value="90" />
+        </div>
+
+        <div class="form-group full">
+          <label>📖 Move 2 Description</label>
+          <input type="text" id="move2Desc" placeholder="e.g. A reckless, full-body charge attack." maxlength="60" />
+        </div>
+
+        <div class="form-group">
+          <label>😱 Weakness</label>
+          <select id="pokeWeakness">
+            <option value="ground">🌍 Ground ×2</option>
+            <option value="fire">🔥 Fire ×2</option>
+            <option value="water">💧 Water ×2</option>
+            <option value="grass">🌿 Grass ×2</option>
+            <option value="electric">⚡ Electric ×2</option>
+            <option value="psychic">🔮 Psychic ×2</option>
+            <option value="dark">🌑 Dark ×2</option>
+            <option value="dragon">🐉 Dragon ×2</option>
+            <option value="fairy">✨ Fairy ×2</option>
+            <option value="fighting">👊 Fighting ×2</option>
+            <option value="ice">❄️ Ice ×2</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🃏 Retreat Cost</label>
+          <select id="pokeRetreat">
+            <option value="0">🆓 Free</option>
+            <option value="1">1 Energy</option>
+            <option value="2">2 Energy</option>
+            <option value="3">3 Energy</option>
+            <option value="4">4 Energy</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🎖️ Stage</label>
+          <select id="pokeStage">
+            <option value="Basic">Basic</option>
+            <option value="Stage 1">Stage 1</option>
+            <option value="Stage 2">Stage 2</option>
+            <option value="EX">EX</option>
+            <option value="V">V</option>
+            <option value="VMAX">VMAX</option>
+            <option value="GX">GX</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🔢 Pokédex #</label>
+          <input type="text" id="pokeDex" placeholder="e.g. 025" maxlength="4" value="001" />
+        </div>
+
+        <div class="form-group full">
+          <label>✍️ Illustrator Name</label>
+          <input type="text" id="pokeIllustrator" placeholder="Your name or alias" maxlength="30" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(3)">Preview Card →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 3: REVIEW & DOWNLOAD -->
+  <div class="panel" id="panel3">
+    <div class="glass">
+      <h2 class="panel-title">Your Legendary Card</h2>
+      <p class="panel-subtitle">Right-click the card to save, or use the download button below 📥</p>
+
+      <div class="review-layout">
+        <!-- CARD PREVIEW -->
+        <div class="card-display">
+          <div id="cardOutput" class="poke-card"></div>
+        </div>
+
+        <!-- REVIEW DETAILS -->
+        <div class="review-details">
+          <div style="margin-bottom: 20px;">
+            <div style="font-family:'Bangers',cursive; font-size:1.3rem; letter-spacing:2px; color:var(--gold); margin-bottom:12px;">Card Summary</div>
+            <div id="reviewStats"></div>
+          </div>
+
+          <div class="btn-row" style="justify-content:flex-start; flex-direction: column; gap: 12px;">
+            <button class="btn btn-download" onclick="downloadCard()" style="width:100%;">
+              📥 Download Card (PNG)
+            </button>
+            <button class="btn btn-primary" onclick="goToStep(2)" style="width:100%;">
+              ✏️ Edit Details
+            </button>
+            <button class="btn btn-secondary" onclick="goToStep(1)" style="width:100%;">
+              🎨 Change Design
+            </button>
+            <button class="btn btn-danger" onclick="startOver()" style="width:100%;">
+              🏠 Start Over
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ====== CROP MODAL ====== -->
+<div class="modal-overlay hidden" id="cropModal">
+  <div class="crop-modal">
+    <div class="crop-title">✂️ Adjust Photo</div>
+    <div class="crop-subtitle">Drag to pan · Use sliders to zoom & rotate</div>
+
+    <div class="crop-viewport" id="cropViewport">
+      <canvas id="cropCanvas"></canvas>
+      <div class="crop-overlay" id="cropOverlayBox"></div>
+    </div>
+
+    <div class="crop-controls">
+      <div class="crop-control-row">
+        <span class="crop-control-label">🔍 Zoom</span>
+        <input type="range" id="cropZoom" min="0.5" max="3" step="0.01" value="1" oninput="updateCrop()" />
+        <span class="crop-control-val" id="cropZoomVal">1.0×</span>
+      </div>
+      <div class="crop-control-row">
+        <span class="crop-control-label">🔄 Rotate</span>
+        <input type="range" id="cropRotate" min="-180" max="180" step="1" value="0" oninput="updateCrop()" />
+        <span class="crop-control-val" id="cropRotateVal">0°</span>
+      </div>
+      <div class="crop-control-row">
+        <span class="crop-control-label">↔️ X Pan</span>
+        <input type="range" id="cropX" min="-200" max="200" step="1" value="0" oninput="updateCrop()" />
+        <span class="crop-control-val" id="cropXVal">0</span>
+      </div>
+      <div class="crop-control-row">
+        <span class="crop-control-label">↕️ Y Pan</span>
+        <input type="range" id="cropY" min="-200" max="200" step="1" value="0" oninput="updateCrop()" />
+        <span class="crop-control-val" id="cropYVal">0</span>
+      </div>
+    </div>
+
+    <div class="crop-btn-row">
+      <button class="btn btn-reset" onclick="resetCrop()">↺ Reset</button>
+      <button class="btn btn-secondary" onclick="closeCropModal()">✕ Cancel</button>
+      <button class="btn btn-primary" onclick="applyCrop()">✓ Apply</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- html2canvas for download -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+  // ====== STATE ======
+  const state = {
+    design: 'classic',
+    image: null,
+    imageSrc: null,       // original uploaded data URL
+    croppedSrc: null,     // cropped/adjusted result data URL
+  };
+
+  // ====== DESIGN SELECTION ======
+  function selectDesign(el) {
+    document.querySelectorAll('.design-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    state.design = el.dataset.design;
+  }
+
+  // ====== STEP NAVIGATION ======
+  function goToStep(num) {
+    // If going to preview, validate & build card
+    if (num === 3) {
+      if (!buildCard()) return;
+    }
+
+    // Update panels
+    document.querySelectorAll('.panel').forEach((p, i) => {
+      p.classList.toggle('active', i === num - 1);
+    });
+
+    // Update step indicators
+    document.querySelectorAll('.step').forEach((s, i) => {
+      s.classList.remove('active', 'done');
+      if (i < num - 1) s.classList.add('done');
+      if (i === num - 1) s.classList.add('active');
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ====== IMAGE UPLOAD ======
+  function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      state.imageSrc = ev.target.result;
+      state.croppedSrc = ev.target.result; // default = original
+      state.image = file;
+
+      // Show preview in upload zone
+      const preview = document.getElementById('uploadedPreview');
+      preview.src = ev.target.result;
+      preview.style.display = 'block';
+      document.getElementById('uploadPlaceholder').style.display = 'none';
+      document.getElementById('uploadedName').textContent = '✓ ' + file.name;
+      document.getElementById('uploadedName').style.display = 'block';
+      document.getElementById('cropTriggerBtn').style.display = 'inline-block';
+
+      // Auto-open crop modal
+      setTimeout(() => openCropModal(), 100);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Drag & drop
+  const uploadZone = document.getElementById('uploadZone');
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      document.getElementById('fileInput').files = dt.files;
+      handleImageUpload({ target: { files: [file] } });
+    }
+  });
+
+  // ====== HP SYNC ======
+  document.getElementById('pokeHP').addEventListener('input', function() {
+    document.getElementById('hpDisplay').textContent = this.value;
+    document.getElementById('hpValue').textContent = this.value;
+  });
+
+  // ====== TYPE EMOJI MAP ======
+  const typeEmoji = {
+    electric: '⚡', fire: '🔥', water: '💧', grass: '🌿', psychic: '🔮',
+    dark: '🌑', dragon: '🐉', fairy: '✨', fighting: '👊', ghost: '👻',
+    ice: '❄️', normal: '⭐', poison: '☠️', rock: '🪨', steel: '⚙️', ground: '🌍'
+  };
+  const typeLabel = {
+    electric: 'Electric', fire: 'Fire', water: 'Water', grass: 'Grass', psychic: 'Psychic',
+    dark: 'Dark', dragon: 'Dragon', fairy: 'Fairy', fighting: 'Fighting', ghost: 'Ghost',
+    ice: 'Ice', normal: 'Normal', poison: 'Poison', rock: 'Rock', steel: 'Steel', ground: 'Ground'
+  };
+  const raritySymbol = { classic: '◆', holo: '★', shadow: '♠' };
+
+  // ====== GET FORM VALUES ======
+  function getVals() {
+    return {
+      name: document.getElementById('pokeName').value || 'Thunderchu',
+      type: document.getElementById('pokeType').value,
+      hp: document.getElementById('pokeHP').value,
+      move1Name: document.getElementById('move1Name').value || 'Thunder Shock',
+      move1Dmg: document.getElementById('move1Dmg').value || '30',
+      move1Desc: document.getElementById('move1Desc').value || 'A jolt of electricity stuns the opponent.',
+      move2Name: document.getElementById('move2Name').value || 'Volt Tackle',
+      move2Dmg: document.getElementById('move2Dmg').value || '90',
+      move2Desc: document.getElementById('move2Desc').value || 'A reckless, full-body charge attack.',
+      weakness: document.getElementById('pokeWeakness').value,
+      retreat: document.getElementById('pokeRetreat').value,
+      stage: document.getElementById('pokeStage').value,
+      dex: document.getElementById('pokeDex').value || '025',
+      illustrator: document.getElementById('pokeIllustrator').value || 'Unknown Trainer',
+    };
+  }
+
+  // ====== BUILD ENERGY DOTS ======
+  function energyDots(type, count) {
+    let html = '';
+    for (let i = 0; i < Math.max(1, parseInt(count) || 1); i++) {
+      html += `<span class="energy-dot energy-${type}" style="border:1px solid rgba(0,0,0,0.2);">${typeEmoji[type] || '●'}</span>`;
+    }
+    return html;
+  }
+
+  function retreatDots(count) {
+    const n = parseInt(count) || 0;
+    if (n === 0) return '<span style="font-size:0.65rem; color:inherit; opacity:0.6;">Free</span>';
+    let html = '';
+    for (let i = 0; i < n; i++) {
+      html += `<span class="energy-dot energy-colorless" style="border:1px solid rgba(0,0,0,0.2);">🌀</span>`;
+    }
+    return html;
+  }
+
+  // ====== IMAGE HTML ======
+  function imageHtml() {
+    const src = state.croppedSrc || state.imageSrc;
+    if (src) {
+      return `<img src="${src}" alt="Pokemon" />`;
+    }
+    return `<div class="placeholder-art">🐾</div>`;
+  }
+
+  // ====== CROP ENGINE ======
+  const crop = {
+    img: null,
+    dragging: false,
+    lastX: 0, lastY: 0,
+  };
+
+  function openCropModal(e) {
+    if (e) e.stopPropagation();
+    if (!state.imageSrc) return;
+    document.getElementById('cropModal').classList.remove('hidden');
+
+    // Init canvas
+    const vp = document.getElementById('cropViewport');
+    const canvas = document.getElementById('cropCanvas');
+    const size = vp.offsetWidth;
+    canvas.width = size;
+    canvas.height = size;
+
+    // Load image
+    crop.img = new Image();
+    crop.img.onload = () => updateCrop();
+    crop.img.src = state.imageSrc;
+
+    // Reset sliders
+    document.getElementById('cropZoom').value = 1;
+    document.getElementById('cropRotate').value = 0;
+    document.getElementById('cropX').value = 0;
+    document.getElementById('cropY').value = 0;
+    updateCropLabels();
+  }
+
+  function closeCropModal() {
+    document.getElementById('cropModal').classList.add('hidden');
+  }
+
+  function resetCrop() {
+    document.getElementById('cropZoom').value = 1;
+    document.getElementById('cropRotate').value = 0;
+    document.getElementById('cropX').value = 0;
+    document.getElementById('cropY').value = 0;
+    updateCrop();
+  }
+
+  function updateCropLabels() {
+    const z = parseFloat(document.getElementById('cropZoom').value);
+    const r = parseInt(document.getElementById('cropRotate').value);
+    const x = parseInt(document.getElementById('cropX').value);
+    const y = parseInt(document.getElementById('cropY').value);
+    document.getElementById('cropZoomVal').textContent = z.toFixed(1) + '×';
+    document.getElementById('cropRotateVal').textContent = r + '°';
+    document.getElementById('cropXVal').textContent = x;
+    document.getElementById('cropYVal').textContent = y;
+  }
+
+  function updateCrop() {
+    if (!crop.img) return;
+    updateCropLabels();
+
+    const canvas = document.getElementById('cropCanvas');
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width;
+    const zoom = parseFloat(document.getElementById('cropZoom').value);
+    const rotate = parseFloat(document.getElementById('cropRotate').value) * Math.PI / 180;
+    const offsetX = parseInt(document.getElementById('cropX').value);
+    const offsetY = parseInt(document.getElementById('cropY').value);
+
+    ctx.clearRect(0, 0, size, size);
+    ctx.save();
+
+    // Move to center, rotate, scale, then draw
+    ctx.translate(size / 2 + offsetX, size / 2 + offsetY);
+    ctx.rotate(rotate);
+    ctx.scale(zoom, zoom);
+
+    const imgAspect = crop.img.naturalWidth / crop.img.naturalHeight;
+    let drawW, drawH;
+    if (imgAspect > 1) {
+      drawH = size;
+      drawW = size * imgAspect;
+    } else {
+      drawW = size;
+      drawH = size / imgAspect;
+    }
+
+    ctx.drawImage(crop.img, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
+  }
+
+  function applyCrop() {
+    const canvas = document.getElementById('cropCanvas');
+    // Export the canvas as the cropped image
+    state.croppedSrc = canvas.toDataURL('image/png');
+
+    // Update the upload preview thumbnail
+    document.getElementById('uploadedPreview').src = state.croppedSrc;
+
+    closeCropModal();
+    showToast('✓ Photo adjusted!');
+  }
+
+  // ====== DRAG TO PAN ======
+  (function setupDrag() {
+    const vp = document.getElementById('cropViewport');
+
+    function getPos(e) {
+      if (e.touches) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function onStart(e) {
+      crop.dragging = true;
+      const p = getPos(e);
+      crop.lastX = p.x;
+      crop.lastY = p.y;
+    }
+    function onMove(e) {
+      if (!crop.dragging) return;
+      e.preventDefault();
+      const p = getPos(e);
+      const dx = p.x - crop.lastX;
+      const dy = p.y - crop.lastY;
+      crop.lastX = p.x;
+      crop.lastY = p.y;
+
+      const xSlider = document.getElementById('cropX');
+      const ySlider = document.getElementById('cropY');
+      xSlider.value = Math.max(-200, Math.min(200, parseInt(xSlider.value) + dx));
+      ySlider.value = Math.max(-200, Math.min(200, parseInt(ySlider.value) + dy));
+      updateCrop();
+    }
+    function onEnd() { crop.dragging = false; }
+
+    vp.addEventListener('mousedown', onStart);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
+    vp.addEventListener('touchstart', onStart, { passive: false });
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onEnd);
+
+    // Scroll to zoom
+    vp.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zSlider = document.getElementById('cropZoom');
+      const delta = e.deltaY > 0 ? -0.05 : 0.05;
+      zSlider.value = Math.max(0.5, Math.min(3, parseFloat(zSlider.value) + delta));
+      updateCrop();
+    }, { passive: false });
+  })();
+
+  // Close modal clicking outside
+  document.getElementById('cropModal').addEventListener('click', function(e) {
+    if (e.target === this) closeCropModal();
+  });
+
+  // ====== START OVER ======
+  function startOver() {
+    if (!confirm('Start over? This will clear all your card data.')) return;
+
+    // Reset state
+    state.design = 'classic';
+    state.image = null;
+    state.imageSrc = null;
+    state.croppedSrc = null;
+
+    // Reset upload zone
+    document.getElementById('uploadedPreview').style.display = 'none';
+    document.getElementById('uploadedPreview').src = '';
+    document.getElementById('uploadPlaceholder').style.display = 'block';
+    document.getElementById('uploadedName').style.display = 'none';
+    document.getElementById('cropTriggerBtn').style.display = 'none';
+    document.getElementById('fileInput').value = '';
+
+    // Reset design selection
+    document.querySelectorAll('.design-option').forEach(o => o.classList.remove('selected'));
+    document.querySelector('[data-design="classic"]').classList.add('selected');
+
+    // Reset all form fields
+    document.getElementById('pokeName').value = '';
+    document.getElementById('pokeType').value = 'electric';
+    document.getElementById('pokeHP').value = 120;
+    document.getElementById('hpDisplay').textContent = '120';
+    document.getElementById('hpValue').textContent = '120';
+    document.getElementById('move1Name').value = '';
+    document.getElementById('move1Dmg').value = '30';
+    document.getElementById('move1Desc').value = '';
+    document.getElementById('move2Name').value = '';
+    document.getElementById('move2Dmg').value = '90';
+    document.getElementById('move2Desc').value = '';
+    document.getElementById('pokeWeakness').value = 'ground';
+    document.getElementById('pokeRetreat').value = '0';
+    document.getElementById('pokeStage').value = 'Basic';
+    document.getElementById('pokeDex').value = '001';
+    document.getElementById('pokeIllustrator').value = '';
+
+    // Go back to step 1
+    document.querySelectorAll('.panel').forEach((p, i) => {
+      p.classList.toggle('active', i === 0);
+    });
+    document.querySelectorAll('.step').forEach((s, i) => {
+      s.classList.remove('active', 'done');
+      if (i === 0) s.classList.add('active');
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast('🏠 Back to the start!');
+  }
+
+  // ====== BUILD CARD HTML ======
+  function buildCardHTML(v) {
+    const t = v.type;
+    const tLabel = typeLabel[t] || 'Normal';
+    const tEmoji = typeEmoji[t] || '⭐';
+    const wEmoji = typeEmoji[v.weakness] || '🌍';
+    const wLabel = typeLabel[v.weakness] || 'Ground';
+    const rarity = raritySymbol[state.design];
+
+    if (state.design === 'classic') {
+      return `
+        <div class="card-inner">
+          <div class="card-header">
+            <div>
+              <span class="pokemon-stage">${v.stage}</span>
+              <div class="pokemon-name">${v.name}</div>
+            </div>
+            <div class="hp-badge"><span>HP </span>${v.hp}</div>
+          </div>
+
+          <div class="card-image-frame">
+            ${imageHtml()}
+          </div>
+
+          <div class="type-bar">
+            <span class="type-badge type-${t}">${tEmoji} ${tLabel}</span>
+            <span class="pokedex-num">No.${v.dex}</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="moves">
+            <div class="move">
+              <div class="move-cost">${energyDots(t, 1)}</div>
+              <div class="move-info">
+                <div class="move-name">${v.move1Name}</div>
+                <div class="move-desc">${v.move1Desc}</div>
+              </div>
+              <div class="move-damage">${v.move1Dmg}</div>
+            </div>
+            <div class="move">
+              <div class="move-cost">${energyDots(t, 2)}</div>
+              <div class="move-info">
+                <div class="move-name">${v.move2Name}</div>
+                <div class="move-desc">${v.move2Desc}</div>
+              </div>
+              <div class="move-damage">${v.move2Dmg}</div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="weakness-row">
+              <div class="stat">Weakness: <span>${wEmoji}×2</span></div>
+              <div class="stat">Retreat: <span>${v.retreat === '0' ? 'Free' : v.retreat + '✦'}</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div class="illustrator">illus. ${v.illustrator}</div>
+              <div class="rarity">${rarity}</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    if (state.design === 'holo') {
+      return `
+        <div class="holo-sheen"></div>
+        <div class="card-inner">
+          <div class="card-header">
+            <div>
+              <span class="pokemon-stage">${v.stage}</span>
+              <div class="pokemon-name">${v.name}</div>
+            </div>
+            <div class="hp-badge"><small>HP </small>${v.hp}</div>
+          </div>
+
+          <div class="card-image-frame">
+            ${imageHtml()}
+          </div>
+
+          <div class="type-bar">
+            <span class="type-badge type-${t}">${tEmoji} ${tLabel}</span>
+            <span class="pokedex-num">No.${v.dex}</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="moves">
+            <div class="move">
+              <div class="move-cost">${energyDots(t, 1)}</div>
+              <div class="move-info">
+                <div class="move-name">${v.move1Name}</div>
+                <div class="move-desc">${v.move1Desc}</div>
+              </div>
+              <div class="move-damage">${v.move1Dmg}</div>
+            </div>
+            <div class="move">
+              <div class="move-cost">${energyDots(t, 2)}</div>
+              <div class="move-info">
+                <div class="move-name">${v.move2Name}</div>
+                <div class="move-desc">${v.move2Desc}</div>
+              </div>
+              <div class="move-damage">${v.move2Dmg}</div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="weakness-row">
+              <div class="stat">Weakness: <span>${wEmoji}×2</span></div>
+              <div class="stat">Retreat: <span>${v.retreat === '0' ? 'Free' : v.retreat + '✦'}</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div class="illustrator">illus. ${v.illustrator}</div>
+              <div class="rarity">${rarity}</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // Shadow
+    return `
+      <div class="shadow-border"></div>
+      <div class="card-inner">
+        <div class="card-header">
+          <div>
+            <span class="pokemon-stage">${v.stage}</span>
+            <div class="pokemon-name">${v.name}</div>
+          </div>
+          <div class="hp-badge"><small>HP </small>${v.hp}</div>
+        </div>
+
+        <div class="card-image-frame">
+          ${imageHtml()}
+        </div>
+
+        <div class="type-bar">
+          <span class="type-badge type-${t}">${tEmoji} ${tLabel}</span>
+          <span class="pokedex-num">No.${v.dex}</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="moves">
+          <div class="move">
+            <div class="move-cost">${energyDots(t, 1)}</div>
+            <div class="move-info">
+              <div class="move-name">${v.move1Name}</div>
+              <div class="move-desc">${v.move1Desc}</div>
+            </div>
+            <div class="move-damage">${v.move1Dmg}</div>
+          </div>
+          <div class="move">
+            <div class="move-cost">${energyDots(t, 2)}</div>
+            <div class="move-info">
+              <div class="move-name">${v.move2Name}</div>
+              <div class="move-desc">${v.move2Desc}</div>
+            </div>
+            <div class="move-damage">${v.move2Dmg}</div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="weakness-row">
+            <div class="stat">Weakness: <span>${wEmoji}×2</span></div>
+            <div class="stat">Retreat: <span>${v.retreat === '0' ? 'Free' : v.retreat + '✦'}</span></div>
+          </div>
+          <div style="text-align:right;">
+            <div class="illustrator">illus. ${v.illustrator}</div>
+            <div class="rarity">${rarity}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ====== BUILD CARD ======
+  function buildCard() {
+    const v = getVals();
+    const cardEl = document.getElementById('cardOutput');
+
+    // Set design class
+    cardEl.className = 'poke-card card-' + state.design;
+
+    // Inject HTML
+    cardEl.innerHTML = buildCardHTML(v);
+
+    // Build review stats
+    const statsEl = document.getElementById('reviewStats');
+    const rows = [
+      ['Pokémon', v.name],
+      ['Type', typeEmoji[v.type] + ' ' + typeLabel[v.type]],
+      ['HP', v.hp],
+      ['Stage', v.stage],
+      ['Move 1', v.move1Name + ' (' + v.move1Dmg + ' dmg)'],
+      ['Move 2', v.move2Name + ' (' + v.move2Dmg + ' dmg)'],
+      ['Weakness', typeEmoji[v.weakness] + ' ' + typeLabel[v.weakness] + ' ×2'],
+      ['Retreat', v.retreat === '0' ? 'Free' : v.retreat + ' energy'],
+      ['Design', state.design.charAt(0).toUpperCase() + state.design.slice(1)],
+      ['Illustrator', v.illustrator],
+      ['Photo', state.imageSrc ? '✓ Uploaded' : 'None (using default)'],
+    ];
+    statsEl.innerHTML = rows.map(([l, r]) => `
+      <div class="review-stat-row">
+        <span class="review-stat-label">${l}</span>
+        <span class="review-stat-value">${r}</span>
+      </div>
+    `).join('');
+
+    return true;
+  }
+
+  // ====== DOWNLOAD ======
+  async function downloadCard() {
+    const cardEl = document.getElementById('cardOutput');
+    showToast('⏳ Generating PNG...');
+
+    try {
+      const canvas = await html2canvas(cardEl, {
+        scale: 3,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false,
+      });
+
+      const link = document.createElement('a');
+      link.download = (document.getElementById('pokeName').value || 'pokemon') + '-card.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('✓ Card downloaded!');
+    } catch (err) {
+      console.error(err);
+      showToast('⚠️ Try right-clicking the card to save!');
+    }
+  }
+
+  // ====== TOAST ======
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ====== INIT DEFAULTS ======
+  document.getElementById('pokeName').value = '';
+  document.getElementById('move1Name').value = '';
+  document.getElementById('move1Desc').value = '';
+  document.getElementById('move2Name').value = '';
+  document.getElementById('move2Desc').value = '';
+</script>
+</body>
+</html>
